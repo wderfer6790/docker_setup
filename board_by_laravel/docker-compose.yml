@@ -1,0 +1,56 @@
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ${SOURCE_ROOT}:/var/git
+    depends_on:
+      - php
+    networks:
+      - net
+
+  php:
+    build: ./php
+    volumes:
+      - ${SOURCE_ROOT}:/var/git
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - net
+
+  node:
+    build: ./node
+    working_dir: /var/git/www.wderfer6790.kr
+    volumes:
+      - ${SOURCE_ROOT}:/var/git
+    # command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    command: tail -f /dev/null
+
+    networks:
+      - net
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER} 
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - net
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - net
+
+volumes:
+  mysql-data:
+
+networks:
+  net:
